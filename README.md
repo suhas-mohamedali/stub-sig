@@ -64,7 +64,7 @@ Health check: `GET /actuator/health`.
 
 ## Run on Windows (C:\workspace)
 
-Needs Java 17 or later (`java -version`). Maven is not needed, the wrapper downloads it.
+Needs Java 21 or later (`java -version`). Maven is not needed, the wrapper downloads it.
 
 ```bat
 cd C:\workspace
