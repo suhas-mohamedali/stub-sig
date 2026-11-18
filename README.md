@@ -1,6 +1,6 @@
 # NPP Payments Notification stub
 
-A Spring Boot stub of the Cuscal **NPP Payments Notification** webhook API. It implements every
+A Spring Boot 4.1 (Java 21) stub of the Cuscal **NPP Payments Notification** webhook API. It implements every
 operation in the OpenAPI spec and returns valid sample responses. Each call is logged when it
 arrives and when its response goes out, **without the request or response body**.
 
