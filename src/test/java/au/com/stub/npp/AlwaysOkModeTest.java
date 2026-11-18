@@ -1,6 +1,8 @@
 package au.com.stub.npp;
 
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -41,5 +43,27 @@ class AlwaysOkModeTest {
                         .contentType(MediaType.APPLICATION_JSON).content("{}"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.reason_code").value("AC05"));
+    }
+
+    @Test
+    void getOnPaymentPathReturns200() throws Exception {
+        mvc.perform(get("/PCCNAU53XXX/payments/test1234"))
+                .andExpect(status().isOk())
+                .andExpect(content().json("{}"));
+    }
+
+    @Test
+    void unknownPathAndMethodReturn200() throws Exception {
+        mvc.perform(put("/b2b/npp/payments/v4/PCCNAU53XXX/payments/test1234").content("{}"))
+                .andExpect(status().isOk());
+        mvc.perform(post("/anything/else"))
+                .andExpect(status().isOk());
+    }
+
+    @Test
+    void healthStillWorks() throws Exception {
+        mvc.perform(get("/actuator/health"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.status").value("UP"));
     }
 }

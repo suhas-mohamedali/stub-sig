@@ -29,6 +29,10 @@ The `x-traceId` received is echoed back as a response header.
 whatever the request looks like. The `x-stub-response-status` header and the `x-traceId` check are ignored.
 `x-stub-reason-code` and `x-stub-delay-ms` still apply.
 
+Any other method or path (for example a `GET` on `/{orgId}/payments/{paymentId}`, or a URL with an
+extra base path) also gets 200 `{}` in this mode, and is flagged in the log as
+`!!! UNMAPPED GET /PCCNAU53XXX/payments/test1234 ...`. With the switch off, those get 404.
+
 To get error responses back, start the stub with the switch off:
 
 ```bat

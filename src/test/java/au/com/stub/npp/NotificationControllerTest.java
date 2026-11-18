@@ -1,6 +1,7 @@
 package au.com.stub.npp;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.header;
@@ -89,5 +90,12 @@ class NotificationControllerTest {
                 .contains(">>> INCOMING POST /CUSCAU2SXXX/payments/P1 traceId=" + TRACE)
                 .contains("<<< RESPONSE POST /CUSCAU2SXXX/payments/P1 status=200 traceId=" + TRACE)
                 .doesNotContain("DO-NOT-LOG-ME");
+    }
+
+    @Test
+    void unmappedCallReturns404WhenAlwaysOkIsOff() throws Exception {
+        mvc.perform(get("/PCCNAU53XXX/payments/test1234"))
+                .andExpect(status().isNotFound())
+                .andExpect(jsonPath("$.error_code").value("CUS.API.404"));
     }
 }
