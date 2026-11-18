@@ -1,0 +1,29 @@
+server:
+  port: 8080
+  # Cuscal calls the webhook base URL you register with them. Set a base path here if you need one,
+  # e.g. /b2b/npp/payments/v4
+  servlet:
+    context-path: ""
+
+spring:
+  application:
+    name: npp-payments-notification-stub
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info
+
+stub:
+  # reason_code returned by Receive Payment Initiation (RAPAIN). See MandatePaymentInitiationReason1Code.
+  rapain-reason-code: ACCP
+  # The spec marks x-traceId as required. Set to false to accept calls without it.
+  require-trace-id: true
+
+logging:
+  file:
+    name: logs/npp-stub.log
+  level:
+    root: INFO
+    npp.calls: INFO
