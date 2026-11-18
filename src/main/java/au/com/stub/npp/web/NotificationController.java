@@ -97,6 +97,10 @@ public class NotificationController {
     private ResponseEntity<Object> respond(String traceId, String forcedStatus, String delayMs, Object okBody) {
         sleep(delayMs);
 
+        if (properties.alwaysOk()) {
+            return withTrace(ResponseEntity.ok(), traceId).body(okBody);
+        }
+
         if (forcedStatus != null && !forcedStatus.isBlank()) {
             HttpStatus status = parseStatus(forcedStatus.trim());
             if (status == null) {

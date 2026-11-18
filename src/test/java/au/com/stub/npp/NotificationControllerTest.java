@@ -19,7 +19,7 @@ import org.springframework.boot.test.system.OutputCaptureExtension;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 
-@SpringBootTest(properties = "logging.file.name=target/test-logs/npp-stub.log")
+@SpringBootTest(properties = {"logging.file.name=target/test-logs/npp-stub.log", "stub.always-ok=false"})
 @AutoConfigureMockMvc
 @ExtendWith(OutputCaptureExtension.class)
 class NotificationControllerTest {

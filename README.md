@@ -23,7 +23,20 @@ All operations are `POST`, take an `x-traceId` header, and accept a JSON body th
 Errors use the spec's `Error1` shape: `{"error_code":"CUS.API.400","error_message":"..."}`.
 The `x-traceId` received is echoed back as a response header.
 
-A call without `x-traceId` gets a 400, because the spec marks it required. Set
+### 200-only mode (default)
+
+`stub.always-ok` is `true` by default, so **every endpoint returns 200** with its success body
+whatever the request looks like. The `x-stub-response-status` header and the `x-traceId` check are ignored.
+`x-stub-reason-code` and `x-stub-delay-ms` still apply.
+
+To get error responses back, start the stub with the switch off:
+
+```bat
+java -jar target\npp-payments-notification-stub-1.0.0.jar --stub.always-ok=false
+```
+
+or set the environment variable `STUB_ALWAYS_OK=false`, or change it in `application.yml`.
+With it off, a call without `x-traceId` gets a 400, because the spec marks it required. Set
 `stub.require-trace-id=false` to accept such calls.
 
 ## Logging
@@ -44,7 +57,7 @@ These request headers are not part of the Cuscal spec. They let you test the cal
 
 | Header | Effect |
 |---|---|
-| `x-stub-response-status: 503` | Return that status with an `Error1` body. Allowed: 200, 400, 401, 404, 429, 500, 503, 504. |
+| `x-stub-response-status: 503` | Only when `stub.always-ok=false`. Return that status with an `Error1` body. Allowed: 200, 400, 401, 404, 429, 500, 503, 504. |
 | `x-stub-reason-code: AC05` | RAPAIN only: return this `reason_code` instead of the default. |
 | `x-stub-delay-ms: 5000` | Wait this long before responding (capped at 120000). |
 
@@ -56,11 +69,24 @@ These request headers are not part of the Cuscal spec. They let you test the cal
 |---|---|---|
 | `server.port` | `8080` | HTTP port |
 | `server.servlet.context-path` | empty | Base path, e.g. `/b2b/npp/payments/v4`, if your registered webhook URL has one |
+| `stub.always-ok` | `true` | Return 200 for every call, ignoring error overrides and the trace id check |
 | `stub.rapain-reason-code` | `ACCP` | Default RAPAIN `reason_code` |
-| `stub.require-trace-id` | `true` | Reject calls without `x-traceId` |
+| `stub.require-trace-id` | `true` | With `always-ok` off, reject calls without `x-traceId` |
 | `logging.file.name` | `logs/npp-stub.log` | Log file |
 
 Health check: `GET /actuator/health`.
+
+## Prebuilt jar
+
+A ready-to-run jar is committed at `target/npp-payments-notification-stub-1.0.0.jar`
+(built with Java 21, Spring Boot 4.1.2). With Java 21 installed you can run it without building:
+
+```bat
+cd C:\workspace\stub-sig
+java -jar target\npp-payments-notification-stub-1.0.0.jar
+```
+
+Rebuilding with `mvnw.cmd clean package` overwrites it.
 
 ## Run on Windows (C:\workspace)
 

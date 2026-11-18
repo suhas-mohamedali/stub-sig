@@ -1,4 +1,6 @@
-target/
+# Build output is ignored, except the runnable jar, which is committed on purpose
+target/*
+!target/npp-payments-notification-stub-1.0.0.jar
 logs/
 *.log
 .idea/

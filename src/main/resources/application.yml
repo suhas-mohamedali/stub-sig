@@ -16,9 +16,13 @@ management:
         include: health,info
 
 stub:
+  # true: every endpoint returns 200 with its success body, whatever the request headers say.
+  # Set to false (or start with --stub.always-ok=false / env STUB_ALWAYS_OK=false) to enable
+  # the x-traceId check and the x-stub-response-status error override.
+  always-ok: true
   # reason_code returned by Receive Payment Initiation (RAPAIN). See MandatePaymentInitiationReason1Code.
   rapain-reason-code: ACCP
-  # The spec marks x-traceId as required. Set to false to accept calls without it.
+  # Only applies when always-ok is false. The spec marks x-traceId as required.
   require-trace-id: true
 
 logging:
