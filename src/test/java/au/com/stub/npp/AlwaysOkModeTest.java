@@ -15,7 +15,7 @@ import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 
 /** Default settings: stub.always-ok=true, so every call gets 200. */
-@SpringBootTest(properties = "logging.file.name=target/test-logs/npp-stub.log")
+@SpringBootTest(properties = {"logging.file.name=target/test-logs/npp-stub.log", "stub.status-callback.enabled=false"})
 @AutoConfigureMockMvc
 class AlwaysOkModeTest {
 
@@ -24,7 +24,7 @@ class AlwaysOkModeTest {
 
     @Test
     void missingTraceIdStillReturns200() throws Exception {
-        mvc.perform(post("/CUSCAU2SXXX/payments/P1").contentType(MediaType.APPLICATION_JSON).content("{}"))
+        mvc.perform(post("/CUSCAU2SXXX/payments/ifti/P1").contentType(MediaType.APPLICATION_JSON).content("{}"))
                 .andExpect(status().isOk())
                 .andExpect(content().json("{}"));
     }

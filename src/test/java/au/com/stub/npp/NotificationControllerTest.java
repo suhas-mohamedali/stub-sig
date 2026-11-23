@@ -20,7 +20,7 @@ import org.springframework.boot.test.system.OutputCaptureExtension;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 
-@SpringBootTest(properties = {"logging.file.name=target/test-logs/npp-stub.log", "stub.always-ok=false"})
+@SpringBootTest(properties = {"logging.file.name=target/test-logs/npp-stub.log", "stub.always-ok=false", "stub.status-callback.enabled=false"})
 @AutoConfigureMockMvc
 @ExtendWith(OutputCaptureExtension.class)
 class NotificationControllerTest {
@@ -33,7 +33,6 @@ class NotificationControllerTest {
 
     @ParameterizedTest
     @ValueSource(strings = {
-            "/CUSCAU2SXXX/payments/BANKNTSTXXXN20180501000000000000010",
             "/CUSCAU2SXXX/payments/ifti/BANKNTSTXXXN20180501000000000000010",
             "/CUSCAU2SXXX/requests/returns/BANKNTSTXXXN20180501000000000000010",
             "/CUSCAU2SXXX/payments/BANKNTSTXXXN20180501000000000000010/status",

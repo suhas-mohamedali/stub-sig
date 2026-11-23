@@ -22,6 +22,14 @@ stub:
   always-ok: true
   # reason_code returned by Receive Payment Initiation (RAPAIN). See MandatePaymentInitiationReason1Code.
   rapain-reason-code: ACCP
+  # Make Payment (POST /{orgId}/payments/{paymentId}) answers 200 with no body, then after delay-ms
+  # POSTs a payment status to {base-url}/{orgId}/payments/{paymentId}/status.
+  status-callback:
+    enabled: true
+    base-url: http://localhost:4002
+    delay-ms: 3000
+    # transaction_status in the callback body, e.g. ACSC (settled) or RJCT (rejected)
+    transaction-status: ACSC
   # Only applies when always-ok is false. The spec marks x-traceId as required.
   require-trace-id: true
 
