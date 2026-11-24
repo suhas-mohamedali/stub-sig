@@ -70,11 +70,11 @@ class MakePaymentCallbackTest {
     private MockMvc mvc;
 
     @Test
-    void makePaymentReturns200WithoutBodyThenPostsStatus(CapturedOutput output) throws Exception {
+    void makePaymentReturns202WithoutBodyThenPostsStatus(CapturedOutput output) throws Exception {
         long start = System.currentTimeMillis();
         mvc.perform(post("/PCCNAU53XXX/payments/test1234").header("x-traceId", "trace-42")
                         .contentType(MediaType.APPLICATION_JSON).content("{\"secret\":\"DO-NOT-LOG-ME\"}"))
-                .andExpect(status().isOk())
+                .andExpect(status().isAccepted())
                 .andExpect(header().string("x-traceId", "trace-42"))
                 .andExpect(content().string(""));
         assertThat(System.currentTimeMillis() - start).as("response is not held for the callback").isLessThan(300);

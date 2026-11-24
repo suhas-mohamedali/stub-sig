@@ -12,7 +12,7 @@ The file supplied is `info.version: 4.0.3`, which includes all v4.0.2 changes.
 `POST /{orgId}/payments/{paymentId}` is the NPP Payments API **Make Payment** call
 ([`npp_payments.yaml`](src/main/resources/openapi/npp_payments.yaml)). The stub:
 
-1. answers **200 with no body** straight away, echoing `x-traceId`;
+1. answers **202 Accepted with no body** straight away, echoing `x-traceId` (the spec's only success response);
 2. **3 seconds later** sends `POST http://localhost:4002/{orgId}/payments/{paymentId}/status` with the
    same `x-traceId` (a new UUID if none came in) and a `PaymentStatusReportResponse1` body:
 
@@ -25,7 +25,7 @@ The log shows the whole flow, without bodies:
 ```
 >>> INCOMING POST /PCCNAU53XXX/payments/test1234 traceId=abc contentType=application/json contentLength=16 from=127.0.0.1
 ... SCHEDULED status callback for PCCNAU53XXX/test1234 in 3000 ms traceId=abc
-<<< RESPONSE POST /PCCNAU53XXX/payments/test1234 status=200 traceId=abc durationMs=12
+<<< RESPONSE POST /PCCNAU53XXX/payments/test1234 status=202 traceId=abc durationMs=12
 >>> OUTGOING POST http://localhost:4002/PCCNAU53XXX/payments/test1234/status traceId=abc (payment status callback)
 <<< OUTGOING RESPONSE POST http://localhost:4002/PCCNAU53XXX/payments/test1234/status status=200 traceId=abc durationMs=56
 ```
@@ -42,7 +42,7 @@ If nothing is listening on 4002 you get `<<< OUTGOING FAILED ... error=...` inst
 Example: `java -jar target\npp-payments-notification-stub-1.0.0.jar --stub.status-callback.base-url=http://localhost:5000`
 
 Note this path is the same as the notification API's Receive Payment, so that webhook now also
-gets 200 with no body and triggers the callback. Every other operation in `npp_payments.yaml`
+gets 202 with no body and triggers the callback. Every other operation in `npp_payments.yaml`
 is answered by the catch-all with 200 `{}` and logged as `UNMAPPED`.
 
 ## Endpoints
@@ -51,7 +51,7 @@ All operations are `POST`, take an `x-traceId` header, and accept a JSON body th
 
 | Operation | Path | 200 response |
 |---|---|---|
-| Receive Payment / Make Payment | `/{orgId}/payments/{paymentId}` | empty, then status callback (see above) |
+| Receive Payment / Make Payment | `/{orgId}/payments/{paymentId}` | 202, empty, then status callback (see above) |
 | Receive IFTI Payment and IFTI Clearing Requests | `/{orgId}/payments/ifti/{paymentId}` | `{}` |
 | Receive RTRF | `/{orgId}/requests/returns/{paymentId}` | `{}` |
 | Receive Payment Status | `/{orgId}/payments/{paymentId}/status` | `{}` |

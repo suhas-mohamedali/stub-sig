@@ -34,7 +34,7 @@ class AlwaysOkModeTest {
         mvc.perform(post("/CUSCAU2SXXX/payments/P1").header("x-traceId", "t1")
                         .header("x-stub-response-status", "503")
                         .contentType(MediaType.APPLICATION_JSON).content("{}"))
-                .andExpect(status().isOk());
+                .andExpect(status().isAccepted());
     }
 
     @Test

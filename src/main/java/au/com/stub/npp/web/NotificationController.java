@@ -35,7 +35,7 @@ public class NotificationController {
 
     /**
      * Make Payment (npp_payments.yaml), which shares its path with the notification API's Receive Payment.
-     * Answers 200 with no body, then POSTs a payment status to the configured callback URL after the
+     * Answers 202 Accepted with no body (as the spec defines), then POSTs a payment status to the configured callback URL after the
      * configured delay (default http://localhost:4002, 3 seconds).
      */
     @PostMapping(path = "/{orgId}/payments/{paymentId}")
@@ -45,10 +45,12 @@ public class NotificationController {
             @RequestHeader(value = StubOverrides.DELAY_MS, required = false) String delayMs,
             @RequestBody(required = false) String body) {
         ResponseEntity<Object> response = respond(traceId, forcedStatus, delayMs, null);
-        if (response.getStatusCode().is2xxSuccessful()) {
-            statusCallback.schedule(orgId, paymentId, traceId);
+        if (!response.getStatusCode().is2xxSuccessful()) {
+            return response;
         }
-        return response;
+        statusCallback.schedule(orgId, paymentId, traceId);
+        // The spec's only success response for Make Payment is 202 Accepted with no body.
+        return ResponseEntity.status(HttpStatus.ACCEPTED).headers(response.getHeaders()).build();
     }
 
     /** Receive IFTI Payment and IFTI Clearing Requests (ReceivePaymentRequest2). */

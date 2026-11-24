@@ -83,11 +83,11 @@ class NotificationControllerTest {
     void logsCallAndResponseWithoutBody(CapturedOutput output) throws Exception {
         mvc.perform(post("/CUSCAU2SXXX/payments/P1").header("x-traceId", TRACE)
                         .contentType(MediaType.APPLICATION_JSON).content(BODY))
-                .andExpect(status().isOk());
+                .andExpect(status().isAccepted());
 
         assertThat(output.getOut())
                 .contains(">>> INCOMING POST /CUSCAU2SXXX/payments/P1 traceId=" + TRACE)
-                .contains("<<< RESPONSE POST /CUSCAU2SXXX/payments/P1 status=200 traceId=" + TRACE)
+                .contains("<<< RESPONSE POST /CUSCAU2SXXX/payments/P1 status=202 traceId=" + TRACE)
                 .doesNotContain("DO-NOT-LOG-ME");
     }
 
