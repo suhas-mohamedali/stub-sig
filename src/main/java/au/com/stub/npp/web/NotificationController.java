@@ -1,6 +1,7 @@
 package au.com.stub.npp.web;
 
 import au.com.stub.npp.StubProperties;
+import au.com.stub.npp.callback.PaymentStatusCallback;
 import java.util.Map;
 import java.util.Set;
 import org.springframework.http.HttpStatus;
@@ -13,7 +14,7 @@ import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RestController;
 
 /**
- * The six webhook operations of the Cuscal NPP Payments Notification API.
+ * The webhook operations of the Cuscal NPP Payments Notification API, plus Make Payment from the NPP Payments API.
  * Request bodies are accepted but never inspected or logged.
  */
 @RestController
@@ -25,19 +26,31 @@ public class NotificationController {
     private static final Set<Integer> SPEC_ERROR_STATUSES = Set.of(400, 401, 404, 429, 500, 503, 504);
 
     private final StubProperties properties;
+    private final PaymentStatusCallback statusCallback;
 
-    public NotificationController(StubProperties properties) {
+    public NotificationController(StubProperties properties, PaymentStatusCallback statusCallback) {
         this.properties = properties;
+        this.statusCallback = statusCallback;
     }
 
-    /** Receive Payment and Receive Clearing Request (ReceivePaymentRequest1). */
-    @PostMapping(path = "/{orgId}/payments/{paymentId}", produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<Object> receivePayment(@PathVariable String orgId, @PathVariable String paymentId,
+    /**
+     * Make Payment (npp_payments.yaml), which shares its path with the notification API's Receive Payment.
+     * Answers 202 Accepted with no body (as the spec defines), then POSTs a payment status to the configured callback URL after the
+     * configured delay (default http://localhost:4002, 3 seconds).
+     */
+    @PostMapping(path = "/{orgId}/payments/{paymentId}")
+    public ResponseEntity<Object> makePayment(@PathVariable String orgId, @PathVariable String paymentId,
             @RequestHeader(value = TRACE_ID, required = false) String traceId,
             @RequestHeader(value = StubOverrides.RESPONSE_STATUS, required = false) String forcedStatus,
             @RequestHeader(value = StubOverrides.DELAY_MS, required = false) String delayMs,
             @RequestBody(required = false) String body) {
-        return respond(traceId, forcedStatus, delayMs, Map.of());
+        ResponseEntity<Object> response = respond(traceId, forcedStatus, delayMs, null);
+        if (!response.getStatusCode().is2xxSuccessful()) {
+            return response;
+        }
+        statusCallback.schedule(orgId, paymentId, traceId);
+        // The spec's only success response for Make Payment is 202 Accepted with no body.
+        return ResponseEntity.status(HttpStatus.ACCEPTED).headers(response.getHeaders()).build();
     }
 
     /** Receive IFTI Payment and IFTI Clearing Requests (ReceivePaymentRequest2). */
@@ -98,7 +111,7 @@ public class NotificationController {
         sleep(delayMs);
 
         if (properties.alwaysOk()) {
-            return withTrace(ResponseEntity.ok(), traceId).body(okBody);
+            return ok(traceId, okBody);
         }
 
         if (forcedStatus != null && !forcedStatus.isBlank()) {
@@ -116,7 +129,7 @@ public class NotificationController {
             return error(HttpStatus.BAD_REQUEST, traceId, "CUS.API.400", "Missing required header x-traceId");
         }
 
-        return withTrace(ResponseEntity.ok(), traceId).body(okBody);
+        return ok(traceId, okBody);
     }
 
     private static HttpStatus parseStatus(String value) {
@@ -133,6 +146,17 @@ public class NotificationController {
 
     private static ResponseEntity<Object> error(HttpStatus status, String traceId, String code, String message) {
         return withTrace(ResponseEntity.status(status), traceId).body(new ErrorResponse(code, message));
+    }
+
+    private static ResponseEntity<Object> ok(String traceId, Object okBody) {
+        if (okBody == null) {
+            ResponseEntity.BodyBuilder builder = ResponseEntity.ok();
+            if (traceId != null && !traceId.isBlank()) {
+                builder.header(TRACE_ID, traceId);
+            }
+            return builder.build();
+        }
+        return withTrace(ResponseEntity.ok(), traceId).body(okBody);
     }
 
     private static ResponseEntity.BodyBuilder withTrace(ResponseEntity.BodyBuilder builder, String traceId) {
