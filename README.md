@@ -17,8 +17,20 @@ The file supplied is `info.version: 4.0.3`, which includes all v4.0.2 changes.
    same `x-traceId` (a new UUID if none came in) and a `PaymentStatusReportResponse1` body:
 
 ```json
-{"transaction_status_information":{"original_transaction_identification":"test1234","transaction_status":"ACSC","acceptance_date_time":"2026-11-23T23:51:20.460Z"}}
+{"transaction_status_information":{
+  "original_transaction_identification":"HBSLAU4TXXXN20261109000000000000123",
+  "transaction_status":"ACSC",
+  "acceptance_date_time":"2026-11-24T22:31:51.303Z",
+  "instructed_amount":"6.36",
+  "posting_flag":"PSTY",
+  "service_level":"sct.05",
+  "settlement_method_identification":"OFFU"}}
 ```
+
+`instructed_amount` and `service_level` are copied from the Make Payment body's `payment_information`
+when present (the body is still never logged); otherwise the configured defaults are used.
+`transaction_status_reason_code` is added only when the status is `RJCT` or `PDNG`.
+The body validates against `PaymentStatusReportResponse1` in the notification spec.
 
 The log shows the whole flow, without bodies:
 
@@ -38,6 +50,11 @@ If nothing is listening on 4002 you get `<<< OUTGOING FAILED ... error=...` inst
 | `stub.status-callback.base-url` | `http://localhost:4002` |
 | `stub.status-callback.delay-ms` | `3000` |
 | `stub.status-callback.transaction-status` | `ACSC` (e.g. `RJCT` to simulate a rejection) |
+| `stub.status-callback.reason-code` | `AC07` (sent only with `RJCT` / `PDNG`) |
+| `stub.status-callback.instructed-amount` | `6.36` (fallback when the request has none) |
+| `stub.status-callback.service-level` | `sct.05` (fallback when the request has none) |
+| `stub.status-callback.posting-flag` | `PSTY` (`PSTG`, `PSTY` or `PSTD`) |
+| `stub.status-callback.settlement-method` | `OFFU` (`OFFU`, `CCOM` or `ONUS`) |
 
 Example: `java -jar target\npp-payments-notification-stub-1.0.0.jar --stub.status-callback.base-url=http://localhost:5000`
 

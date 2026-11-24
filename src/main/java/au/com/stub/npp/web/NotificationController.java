@@ -48,7 +48,7 @@ public class NotificationController {
         if (!response.getStatusCode().is2xxSuccessful()) {
             return response;
         }
-        statusCallback.schedule(orgId, paymentId, traceId);
+        statusCallback.schedule(orgId, paymentId, traceId, body);
         // The spec's only success response for Make Payment is 202 Accepted with no body.
         return ResponseEntity.status(HttpStatus.ACCEPTED).headers(response.getHeaders()).build();
     }

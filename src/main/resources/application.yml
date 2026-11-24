@@ -30,6 +30,15 @@ stub:
     delay-ms: 3000
     # transaction_status in the callback body, e.g. ACSC (settled) or RJCT (rejected)
     transaction-status: ACSC
+    # transaction_status_reason_code, only sent when transaction-status is RJCT or PDNG
+    reason-code: AC07
+    # Used when the Make Payment body has no payment_information.instructed_amount / service_level
+    instructed-amount: "6.36"
+    service-level: sct.05
+    # posting_flag: PSTG (posting within SLA), PSTY (posting delayed), PSTD (posted)
+    posting-flag: PSTY
+    # settlement_method_identification: OFFU (Off Us), CCOM (Cuscal Community), ONUS (On Us)
+    settlement-method: OFFU
   # Only applies when always-ok is false. The spec marks x-traceId as required.
   require-trace-id: true
 

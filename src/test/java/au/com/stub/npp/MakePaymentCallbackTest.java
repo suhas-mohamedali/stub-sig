@@ -73,7 +73,8 @@ class MakePaymentCallbackTest {
     void makePaymentReturns202WithoutBodyThenPostsStatus(CapturedOutput output) throws Exception {
         long start = System.currentTimeMillis();
         mvc.perform(post("/PCCNAU53XXX/payments/test1234").header("x-traceId", "trace-42")
-                        .contentType(MediaType.APPLICATION_JSON).content("{\"secret\":\"DO-NOT-LOG-ME\"}"))
+                        .contentType(MediaType.APPLICATION_JSON).content("{\"payment_information\":{\"instructed_amount\":\"12.34\",\"service_level\":\"x2p1.01\","
+                                + "\"secret\":\"DO-NOT-LOG-ME\"}}"))
                 .andExpect(status().isAccepted())
                 .andExpect(header().string("x-traceId", "trace-42"))
                 .andExpect(content().string(""));
@@ -87,7 +88,14 @@ class MakePaymentCallbackTest {
         assertThat(r.traceId()).isEqualTo("trace-42");
         assertThat(r.contentType()).startsWith("application/json");
         assertThat(r.body()).contains("\"transaction_status\":\"ACSC\"")
-                .contains("\"original_transaction_identification\":\"test1234\"");
+                .contains("\"original_transaction_identification\":\"test1234\"")
+                .contains("\"acceptance_date_time\":\"20")
+                .contains("\"instructed_amount\":\"12.34\"")
+                .contains("\"service_level\":\"x2p1.01\"")
+                .contains("\"posting_flag\":\"PSTY\"")
+                .contains("\"settlement_method_identification\":\"OFFU\"")
+                .doesNotContain("transaction_status_reason_code")
+                .doesNotContain("DO-NOT-LOG-ME");
 
         Thread.sleep(300);
         assertThat(output.getOut())
@@ -96,5 +104,20 @@ class MakePaymentCallbackTest {
                 .contains("<<< OUTGOING RESPONSE POST")
                 .doesNotContain("DO-NOT-LOG-ME")
                 .doesNotContain("transaction_status");
+    }
+
+    @Autowired
+    private au.com.stub.npp.callback.PaymentStatusCallback callback;
+
+    @Test
+    void defaultsUsedWhenRequestHasNoPaymentInformation() {
+        @SuppressWarnings("unchecked")
+        java.util.Map<String, Object> info = (java.util.Map<String, Object>)
+                callback.body("P1", "not json").get("transaction_status_information");
+        assertThat(info).containsEntry("instructed_amount", "6.36")
+                .containsEntry("service_level", "sct.05")
+                .containsEntry("posting_flag", "PSTY")
+                .containsEntry("settlement_method_identification", "OFFU")
+                .containsEntry("transaction_status", "ACSC");
     }
 }
